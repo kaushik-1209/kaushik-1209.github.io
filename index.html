@@ -4,9 +4,10 @@
   <meta charset="UTF-8" />
   <title>Model 7 Design Report: Kaushik Nerusu – SES 141</title>
   <style>
+    /* Reset & base */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
       background: #f4f7fa;
       color: #333;
       line-height: 1.5;
@@ -22,7 +23,7 @@
     }
     header h1 {
       font-size: 1.8rem;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.3rem;
     }
     header p {
       color: #555;
@@ -78,17 +79,17 @@
   <main>
     <header>
       <h1>Model 7 Design Report</h1>
-      <p>Kaushik Nerusu | SES 141</p>
+      <p>Kaushik Nerusu • Class SES 141</p>
     </header>
 
-    
+    <!-- 1. House Energy Estimate -->
     <section>
       <h2>1. Estimate House Energy Use</h2>
       <label>
         House area (ft²)
         <input id="sqft" type="number" value="1000" />
       </label>
-      <button onclick="estimateEnergy()">Estimate kWh/day &amp; kWh/month</button>
+      <button id="estimateBtn">Estimate kWh/day &amp; kWh/month</button>
       <div id="energyResult" class="result"></div>
     </section>
 
@@ -107,7 +108,7 @@
         Avg. irradiance (kWh/m²·day)
         <input id="pvIrr" type="number" value="4.5" />
       </label>
-      <button onclick="calculatePV()">Calculate kWh/month</button>
+      <button id="calcPVBtn">Calculate kWh/month</button>
       <div id="pvResult" class="result"></div>
     </section>
 
@@ -122,51 +123,52 @@
         Electricity rate ($/kWh)
         <input id="elecRate" type="number" value="0.12" step="0.01" />
       </label>
-      <button onclick="calculateROI()">Calculate Payback &amp; 20-yr Savings</button>
+      <button id="calcROIBtn">Calculate Payback &amp; 20-yr Savings</button>
       <div id="roiResult" class="result"></div>
     </section>
   </main>
 
   <script>
-    function estimateEnergy() {
-      const sqft = +document.getElementById('sqft').value;
-      const powerDensity = 10; // W/ft²
-      const daily = sqft * (powerDensity / 1000);
-      const monthly = daily * 30;
-      document.getElementById('energyResult').textContent =
-        `≈ ${daily.toFixed(1)} kWh/day → ${monthly.toFixed(0)} kWh/month`;
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. House energy estimate
+      document.getElementById('estimateBtn').addEventListener('click', () => {
+        const sqft = parseFloat(document.getElementById('sqft').value) || 0;
+        const powerDensity = 10; // W/ft²
+        const daily   = sqft * (powerDensity / 1000);
+        const monthly = daily * 30;
+        document.getElementById('energyResult').innerText =
+          `≈ ${daily.toFixed(1)} kWh/day → ${monthly.toFixed(0)} kWh/month`;
+      });
 
-    function calculatePV() {
-      const area = +document.getElementById('pvArea').value;
-      const eff = +document.getElementById('pvEff').value / 100;
-      const irr = +document.getElementById('pvIrr').value;
-      const monthly = irr * area * eff * 30;
-      document.getElementById('pvResult').textContent =
-        `≈ ${monthly.toFixed(0)} kWh/month`;
-    }
+      // 2. Solar-PV yield
+      document.getElementById('calcPVBtn').addEventListener('click', () => {
+        const area = parseFloat(document.getElementById('pvArea').value) || 0;
+        const eff  = (parseFloat(document.getElementById('pvEff').value) || 0) / 100;
+        const irr  = parseFloat(document.getElementById('pvIrr').value) || 0;
+        const monthly = irr * area * eff * 30;
+        document.getElementById('pvResult').innerText =
+          `≈ ${monthly.toFixed(0)} kWh/month`;
+      });
 
-        function calculateROI() {
-      const cost = +document.getElementById('sysCost').value;
-      const rate = +document.getElementById('elecRate').value;
+      // 3. Payback analysis
+      document.getElementById('calcROIBtn').addEventListener('click', () => {
+        const cost = parseFloat(document.getElementById('sysCost').value) || 0;
+        const rate = parseFloat(document.getElementById('elecRate').value) || 0;
+        // recalc solar PV
+        const area = parseFloat(document.getElementById('pvArea').value) || 0;
+        const eff  = (parseFloat(document.getElementById('pvEff').value) || 0) / 100;
+        const irr  = parseFloat(document.getElementById('pvIrr').value) || 0;
+        const monthlyPV = irr * area * eff * 30;
 
--     // grab the PV result from the DOM (this can lead to NaN)
--     const pvText = document.getElementById('pvResult').textContent;
--     const monthlyPV = pvText ? +pvText.split(' ')[0] : 0;
-+     // recalc PV yield directly from the inputs
-+     const area = +document.getElementById('pvArea').value;
-+     const eff  = +document.getElementById('pvEff').value  / 100;
-+     const irr  = +document.getElementById('pvIrr').value;
-+     const monthlyPV = irr * area * eff * 30;
+        const yearlySavings = monthlyPV * 12 * rate;
+        const payback       = cost / yearlySavings;
+        const net20         = yearlySavings * 20 - cost;
 
-      const yearlySavings = monthlyPV * 12 * rate;
-      const payback       = cost / yearlySavings;
-      const net20         = yearlySavings * 20 - cost;
-
-      document.getElementById('roiResult').innerHTML =
-        `Payback ≈ ${payback.toFixed(1)} years<br>` +
-        `Net savings (20 yr) ≈ \$${net20.toLocaleString()}`;
-    }
+        document.getElementById('roiResult').innerHTML =
+          `Payback ≈ ${payback.toFixed(1)} years<br>` +
+          `Net savings (20 yr) ≈ $${net20.toLocaleString()}`;
+      });
+    });
   </script>
 </body>
 </html>
