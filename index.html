@@ -1,83 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>House Energy + Solar ROI</title>
+  <meta charset="UTF-8" />
+  <title>Model 7 Design Report: Kaushik Nerusu – SES 141</title>
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 1rem; }
-    section { margin-bottom: 2rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; }
-    label, input { display: block; margin: .5rem 0; }
-    button { margin-top: .5rem; }
-    .result { margin-top: .5rem; font-weight: bold; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f7fa;
+      color: #333;
+      line-height: 1.5;
+    }
+    main {
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    header h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    header p {
+      color: #555;
+    }
+    section {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    section h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      color: #222;
+    }
+    label {
+      display: block;
+      margin-top: 0.5rem;
+      color: #444;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 0.4rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-top: 0.2rem;
+    }
+    button {
+      margin-top: 1rem;
+      background: #007acc;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover {
+      background: #005fa3;
+    }
+    .result {
+      margin-top: 0.8rem;
+      padding: 0.6rem;
+      background: #eef6ff;
+      border: 1px solid #cce4ff;
+      border-radius: 4px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <h1>Home Energy + Solar ROI Calculator</h1>
+  <main>
+    <header>
+      <h1>Model 7 Design Report</h1>
+      <p>Kaushik Nerusu • Class SES 141</p>
+    </header>
 
-  <!-- 1. Home‐Energy OOM Estimator -->
-  <section>
-    <h2>1. Estimate House Energy Use (LO a+b)</h2>
-    <label>House area (ft²): <input id="sqft" type="number" value="1000"></label>
-    <!-- powerDensity is W/ft² you can refine via hypothesis -->
-    <button onclick="estimateEnergy()">Estimate kWh/day & kWh/month</button>
-    <div id="energyResult" class="result"></div>
-  </section>
+    
+    <section>
+      <h2>1. Estimate House Energy Use</h2>
+      <label>
+        House area (ft²)
+        <input id="sqft" type="number" value="1000" />
+      </label>
+      <button onclick="estimateEnergy()">Estimate kWh/day &amp; kWh/month</button>
+      <div id="energyResult" class="result"></div>
+    </section>
 
-  <!-- 2. Solar‐PV Output Calculator -->
-  <section>
-    <h2>2. Solar‐PV Yield (LO b+c)</h2>
-    <label>Roof area (m²): <input id="pvArea" type="number" value="20"></label>
-    <label>Panel efficiency (%): <input id="pvEff" type="number" value="18"></label>
-    <label>Avg. irradiance (kWh/m²·day): <input id="pvIrr" type="number" value="4.5"></label>
-    <button onclick="calculatePV()">Calculate kWh/month</button>
-    <div id="pvResult" class="result"></div>
-  </section>
+    <!-- 2. Solar-PV Yield -->
+    <section>
+      <h2>2. Solar-PV Yield</h2>
+      <label>
+        Roof area (m²)
+        <input id="pvArea" type="number" value="20" />
+      </label>
+      <label>
+        Panel efficiency (%)
+        <input id="pvEff" type="number" value="18" />
+      </label>
+      <label>
+        Avg. irradiance (kWh/m²·day)
+        <input id="pvIrr" type="number" value="4.5" />
+      </label>
+      <button onclick="calculatePV()">Calculate kWh/month</button>
+      <div id="pvResult" class="result"></div>
+    </section>
 
-  <!-- 3. Solar ROI / Payback -->
-  <section>
-    <h2>3. Payback Analysis (LO d)</h2>
-    <label>System cost ($): <input id="sysCost" type="number" value="8000"></label>
-    <label>Electricity rate ($/kWh): <input id="elecRate" type="number" value="0.12" step="0.01"></label>
-    <button onclick="calculateROI()">Calculate Payback & 20 yr Savings</button>
-    <div id="roiResult" class="result"></div>
-  </section>
+    <!-- 3. Payback Analysis -->
+    <section>
+      <h2>3. Payback Analysis</h2>
+      <label>
+        System cost ($)
+        <input id="sysCost" type="number" value="8000" />
+      </label>
+      <label>
+        Electricity rate ($/kWh)
+        <input id="elecRate" type="number" value="0.12" step="0.01" />
+      </label>
+      <button onclick="calculateROI()">Calculate Payback &amp; 20-yr Savings</button>
+      <div id="roiResult" class="result"></div>
+    </section>
+  </main>
 
   <script>
-    // 1.
     function estimateEnergy() {
-      const sqft = parseFloat(document.getElementById('sqft').value);
-      const powerDensity = 10; // W per ft² (adjustable hypothesis)
-      const dailyKWh = sqft * (powerDensity / 1000);
-      const monthlyKWh = dailyKWh * 30;
+      const sqft = +document.getElementById('sqft').value;
+      const powerDensity = 10; // W/ft²
+      const daily = sqft * (powerDensity / 1000);
+      const monthly = daily * 30;
       document.getElementById('energyResult').textContent =
-        `≈ ${dailyKWh.toFixed(1)} kWh/day → ${monthlyKWh.toFixed(0)} kWh/month`;
+        `≈ ${daily.toFixed(1)} kWh/day → ${monthly.toFixed(0)} kWh/month`;
     }
 
-    // 2.
     function calculatePV() {
-      const area = parseFloat(document.getElementById('pvArea').value);
-      const eff = parseFloat(document.getElementById('pvEff').value) / 100;
-      const irr = parseFloat(document.getElementById('pvIrr').value);
-      // irr is kWh/m²·day → multiply by area & eff & days
+      const area = +document.getElementById('pvArea').value;
+      const eff = +document.getElementById('pvEff').value / 100;
+      const irr = +document.getElementById('pvIrr').value;
       const monthly = irr * area * eff * 30;
       document.getElementById('pvResult').textContent =
-        `≈ ${monthly.toFixed(0)} kWh/month`;
+        `≈ ${monthly.toFixed(0)} kWh/month`;
     }
 
-    // 3.
     function calculateROI() {
-      const cost = parseFloat(document.getElementById('sysCost').value);
-      const rate = parseFloat(document.getElementById('elecRate').value);
-      // Grab PV result from calc #2, or recalc here:
-      const monthlyPV = parseFloat(
-        document.getElementById('pvResult').textContent.split(' ')[0]
-      ) || 0;
+      const cost = +document.getElementById('sysCost').value;
+      const rate = +document.getElementById('elecRate').value;
+     
+      const pvText = document.getElementById('pvResult').textContent;
+      const monthlyPV = pvText ? +pvText.split(' ')[0] : 0;
       const yearlySavings = monthlyPV * 12 * rate;
       const payback = cost / yearlySavings;
-      const totalSavings20 = yearlySavings * 20 - cost;
+      const net20 = yearlySavings * 20 - cost;
       document.getElementById('roiResult').innerHTML =
-        `Payback ≈ ${payback.toFixed(1)} years<br>` +
-        `Net savings in 20 yr ≈ \$${totalSavings20.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+        `Payback ≈ ${payback.toFixed(1)} years<br>` +
+        `Net savings (20 yr) ≈ $${net20.toLocaleString()}`;
     }
   </script>
 </body>
