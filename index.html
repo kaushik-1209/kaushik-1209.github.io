@@ -146,18 +146,26 @@
         `≈ ${monthly.toFixed(0)} kWh/month`;
     }
 
-    function calculateROI() {
+        function calculateROI() {
       const cost = +document.getElementById('sysCost').value;
       const rate = +document.getElementById('elecRate').value;
-     
-      const pvText = document.getElementById('pvResult').textContent;
-      const monthlyPV = pvText ? +pvText.split(' ')[0] : 0;
+
+-     // grab the PV result from the DOM (this can lead to NaN)
+-     const pvText = document.getElementById('pvResult').textContent;
+-     const monthlyPV = pvText ? +pvText.split(' ')[0] : 0;
++     // recalc PV yield directly from the inputs
++     const area = +document.getElementById('pvArea').value;
++     const eff  = +document.getElementById('pvEff').value  / 100;
++     const irr  = +document.getElementById('pvIrr').value;
++     const monthlyPV = irr * area * eff * 30;
+
       const yearlySavings = monthlyPV * 12 * rate;
-      const payback = cost / yearlySavings;
-      const net20 = yearlySavings * 20 - cost;
+      const payback       = cost / yearlySavings;
+      const net20         = yearlySavings * 20 - cost;
+
       document.getElementById('roiResult').innerHTML =
         `Payback ≈ ${payback.toFixed(1)} years<br>` +
-        `Net savings (20 yr) ≈ $${net20.toLocaleString()}`;
+        `Net savings (20 yr) ≈ \$${net20.toLocaleString()}`;
     }
   </script>
 </body>
