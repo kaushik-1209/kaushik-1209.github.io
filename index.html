@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>House Energy + Solar ROI</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 1rem; }
+    section { margin-bottom: 2rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; }
+    label, input { display: block; margin: .5rem 0; }
+    button { margin-top: .5rem; }
+    .result { margin-top: .5rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Home Energy + Solar ROI Calculator</h1>
+
+  <!-- 1. Home‐Energy OOM Estimator -->
+  <section>
+    <h2>1. Estimate House Energy Use (LO a+b)</h2>
+    <label>House area (ft²): <input id="sqft" type="number" value="1000"></label>
+    <!-- powerDensity is W/ft² you can refine via hypothesis -->
+    <button onclick="estimateEnergy()">Estimate kWh/day & kWh/month</button>
+    <div id="energyResult" class="result"></div>
+  </section>
+
+  <!-- 2. Solar‐PV Output Calculator -->
+  <section>
+    <h2>2. Solar‐PV Yield (LO b+c)</h2>
+    <label>Roof area (m²): <input id="pvArea" type="number" value="20"></label>
+    <label>Panel efficiency (%): <input id="pvEff" type="number" value="18"></label>
+    <label>Avg. irradiance (kWh/m²·day): <input id="pvIrr" type="number" value="4.5"></label>
+    <button onclick="calculatePV()">Calculate kWh/month</button>
+    <div id="pvResult" class="result"></div>
+  </section>
+
+  <!-- 3. Solar ROI / Payback -->
+  <section>
+    <h2>3. Payback Analysis (LO d)</h2>
+    <label>System cost ($): <input id="sysCost" type="number" value="8000"></label>
+    <label>Electricity rate ($/kWh): <input id="elecRate" type="number" value="0.12" step="0.01"></label>
+    <button onclick="calculateROI()">Calculate Payback & 20 yr Savings</button>
+    <div id="roiResult" class="result"></div>
+  </section>
+
+  <script>
+    // 1.
+    function estimateEnergy() {
+      const sqft = parseFloat(document.getElementById('sqft').value);
+      const powerDensity = 10; // W per ft² (adjustable hypothesis)
+      const dailyKWh = sqft * (powerDensity / 1000);
+      const monthlyKWh = dailyKWh * 30;
+      document.getElementById('energyResult').textContent =
+        `≈ ${dailyKWh.toFixed(1)} kWh/day → ${monthlyKWh.toFixed(0)} kWh/month`;
+    }
+
+    // 2.
+    function calculatePV() {
+      const area = parseFloat(document.getElementById('pvArea').value);
+      const eff = parseFloat(document.getElementById('pvEff').value) / 100;
+      const irr = parseFloat(document.getElementById('pvIrr').value);
+      // irr is kWh/m²·day → multiply by area & eff & days
+      const monthly = irr * area * eff * 30;
+      document.getElementById('pvResult').textContent =
+        `≈ ${monthly.toFixed(0)} kWh/month`;
+    }
+
+    // 3.
+    function calculateROI() {
+      const cost = parseFloat(document.getElementById('sysCost').value);
+      const rate = parseFloat(document.getElementById('elecRate').value);
+      // Grab PV result from calc #2, or recalc here:
+      const monthlyPV = parseFloat(
+        document.getElementById('pvResult').textContent.split(' ')[0]
+      ) || 0;
+      const yearlySavings = monthlyPV * 12 * rate;
+      const payback = cost / yearlySavings;
+      const totalSavings20 = yearlySavings * 20 - cost;
+      document.getElementById('roiResult').innerHTML =
+        `Payback ≈ ${payback.toFixed(1)} years<br>` +
+        `Net savings in 20 yr ≈ \$${totalSavings20.toLocaleString(undefined, {maximumFractionDigits:0})}`;
+    }
+  </script>
+</body>
+</html>
